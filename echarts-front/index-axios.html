@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>招聘数据分析可视化 - Axios版本</title>
+    <!-- 引入 ECharts -->
+    <script src="./js/echarts.js"></script>
+    <!-- 引入 Axios -->
+    <script src="./js/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn.active {
+            background: #4c51bf;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .chart-container {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+        }
+
+        .chart-item {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .chart-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .chart-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            font-weight: 600;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .chart {
+            width: 100%;
+            height: 500px;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 500px;
+            color: #667eea;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 500px;
+            color: #e53e3e;
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .status-bar {
+            background: #2d3748;
+            color: white;
+            padding: 10px 30px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #48bb78;
+        }
+
+        @media (max-width: 768px) {
+            .chart-container {
+                grid-template-columns: 1fr;
+                padding: 15px;
+            }
+
+            .control-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 招聘数据分析可视化</h1>
+            <p>基于 ECharts + Axios 的现代化数据可视化平台</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <button class="btn active" onclick="loadChart('industry')" id="btn-industry">📊 行业需求分析</button>
+                <button class="btn" onclick="loadChart('salary')" id="btn-salary">💰 薪资分布</button>
+                <button class="btn" onclick="loadChart('skills')" id="btn-skills">🛠️ 技能需求</button>
+                <button class="btn" onclick="loadChart('regional')" id="btn-regional">🌍 地区薪资</button>
+                <button class="btn" onclick="loadChart('education')" id="btn-education">🎓 学历薪资</button>
+                <button class="btn" onclick="loadChart('experience')" id="btn-experience">⏰ 经验薪资</button>
+                <button class="btn" onclick="loadChart('company-size')" id="btn-company-size">🏢 公司规模</button>
+                <button class="btn" onclick="loadChart('job-type')" id="btn-job-type">💼 职位类型</button>
+                <button class="btn" onclick="loadChart('trend')" id="btn-trend">📈 发布趋势</button>
+                <button class="btn" onclick="loadChart('benefits')" id="btn-benefits">🎁 热门福利</button>
+            </div>
+        </div>
+
+        <div class="chart-container" id="chartContainer">
+            <!-- 图表将动态加载到这里 -->
+        </div>
+
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">就绪</span>
+            </div>
+            <div id="requestInfo">API: http://localhost:8080</div>
+        </div>
+    </div>
+
+    <script>
+        // 全局配置
+        const CONFIG = {
+            API_BASE_URL: 'http://localhost:8080',
+            TIMEOUT: 15000,
+            RETRY_COUNT: 3
+        };
+
+        // 全局状态管理
+        const AppState = {
+            currentCharts: [],
+            isLoading: false,
+            currentChart: null
+        };
+
+        // 配置 Axios
+        axios.defaults.baseURL = CONFIG.API_BASE_URL;
+        axios.defaults.timeout = CONFIG.TIMEOUT;
+        axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+        // 请求拦截器
+        axios.interceptors.request.use(
+            config => {
+                updateStatus('loading', `正在请求: ${config.url}`);
+                return config;
+            },
+            error => {
+                updateStatus('error', '请求配置错误');
+                return Promise.reject(error);
+            }
+        );
+
+        // 响应拦截器
+        axios.interceptors.response.use(
+            response => {
+                updateStatus('success', `请求成功: ${response.config.url}`);
+                return response;
+            },
+            error => {
+                let errorMsg = '请求失败';
+                if (error.response) {
+                    errorMsg = `服务器错误: ${error.response.status}`;
+                } else if (error.request) {
+                    errorMsg = '网络连接失败';
+                } else {
+                    errorMsg = `请求错误: ${error.message}`;
+                }
+                updateStatus('error', errorMsg);
+                return Promise.reject(error);
+            }
+        );
+
+        // 状态更新函数
+        function updateStatus(type, message) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+
+            const colors = {
+                loading: '#f6ad55',
+                success: '#48bb78',
+                error: '#f56565',
+                ready: '#667eea'
+            };
+
+            statusDot.style.background = colors[type] || colors.ready;
+            statusText.textContent = message;
+
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    updateStatus('ready', '就绪');
+                }, 3000);
+            }
+        }
+
+        // 图表配置映射
+        const CHART_CONFIGS = {
+            'industry': {
+                title: '📊 行业需求分析',
+                endpoint: '/api/analysis/industries',
+                type: 'bar-line'
+            },
+            'salary': {
+                title: '💰 薪资分布',
+                endpoint: '/api/analysis/salary-distribution',
+                type: 'pie'
+            },
+            'skills': {
+                title: '🛠️ 技能需求分析',
+                endpoint: '/api/analysis/skills',
+                type: 'horizontal-bar'
+            },
+            'regional': {
+                title: '🌍 地区薪资分析',
+                endpoint: '/api/analysis/regional-salary',
+                type: 'bar-line'
+            },
+            'education': {
+                title: '🎓 学历薪资分析',
+                endpoint: '/api/analysis/education-salary',
+                type: 'bar'
+            },
+            'experience': {
+                title: '⏰ 经验薪资分析',
+                endpoint: '/api/analysis/experience-salary',
+                type: 'line'
+            },
+            'company-size': {
+                title: '🏢 公司规模分析',
+                endpoint: '/api/analysis/company-size-salary',
+                type: 'doughnut'
+            },
+            'job-type': {
+                title: '💼 职位类型分布',
+                endpoint: '/api/analysis/job-type-distribution',
+                type: 'pie'
+            },
+            'trend': {
+                title: '📈 发布趋势分析',
+                endpoint: '/api/analysis/posting-trend',
+                type: 'trend-line'
+            },
+            'benefits': {
+                title: '🎁 热门福利分析',
+                endpoint: '/api/analysis/popular-benefits',
+                type: 'horizontal-bar'
+            }
+        };
+
+        // 清理现有图表
+        function clearCharts() {
+            AppState.currentCharts.forEach(chart => {
+                if (chart && typeof chart.dispose === 'function') {
+                    chart.dispose();
+                }
+            });
+            AppState.currentCharts = [];
+            document.getElementById('chartContainer').innerHTML = '';
+        }
+
+        // 设置按钮激活状态
+        function setActiveButton(chartType) {
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`btn-${chartType}`).classList.add('active');
+        }
+
+        // 创建图表容器
+        function createChartContainer(title, id) {
+            return `
+                <div class="chart-item">
+                    <div class="chart-header">${title}</div>
+                    <div class="chart" id="${id}"></div>
+                </div>
+            `;
+        }
+
+        // 显示加载状态
+        function showLoading(containerId) {
+            document.getElementById(containerId).innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>数据加载中...</div>
+                </div>
+            `;
+        }
+
+        // 显示错误状态
+        function showError(containerId, error) {
+            console.error('Chart Error:', error);
+            document.getElementById(containerId).innerHTML = `
+                <div class="error">
+                    <div class="error-icon">⚠️</div>
+                    <div>数据加载失败</div>
+                    <div style="font-size: 12px; margin-top: 10px; opacity: 0.7;">${error.message || '请检查网络连接'}</div>
+                </div>
+            `;
+        }
+
+        // 主要的图表加载函数
+        async function loadChart(chartType) {
+            if (AppState.isLoading) return;
+
+            const config = CHART_CONFIGS[chartType];
+            if (!config) {
+                console.error('Unknown chart type:', chartType);
+                return;
+            }
+
+            AppState.isLoading = true;
+            AppState.currentChart = chartType;
+
+            setActiveButton(chartType);
+            clearCharts();
+
+            const container = document.getElementById('chartContainer');
+            const chartId = `chart-${chartType}`;
+            container.innerHTML = createChartContainer(config.title, chartId);
+
+            showLoading(chartId);
+
+            try {
+                const response = await axios.get(config.endpoint);
+                const data = response.data;
+
+                if (!data || data.length === 0) {
+                    throw new Error('没有可用数据');
+                }
+
+                const chart = echarts.init(document.getElementById(chartId));
+                const option = generateChartOption(config.type, data, config.title);
+
+                chart.setOption(option);
+                AppState.currentCharts.push(chart);
+
+                // 响应式处理
+                window.addEventListener('resize', () => {
+                    chart.resize();
+                });
+
+            } catch (error) {
+                showError(chartId, error);
+            } finally {
+                AppState.isLoading = false;
+            }
+        }
+
+        // 生成图表配置
+        function generateChartOption(type, data, title) {
+            const baseOption = {
+                title: {
+                    text: title,
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(50, 50, 50, 0.9)',
+                    borderColor: '#333',
+                    textStyle: {
+                        color: '#fff'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                }
+            };
+
+            switch (type) {
+                case 'bar-line':
+                    return {
+                        ...baseOption,
+                        legend: {
+                                data: ['岗位数量', '平均薪资'],
+                                top: 30
+                            },
+                            xAxis: {
+                                type: 'category',
+                                data: data.map(item => item.industryName || item.workLocation),
+                                axisLabel: {
+                                    rotate: 45,
+                                    interval: 0
+                                }
+                            },
+                            yAxis: [{
+                                    type: 'value',
+                                    name: '岗位数量',
+                                    position: 'left'
+                                },
+                                {
+                                    type: 'value',
+                                    name: '平均薪资(元)',
+                                    position: 'right'
+                                }
+                            ],
+                            series: [{
+                                    name: '岗位数量',
+                                    type: 'bar',
+                                    data: data.map(item => item.jobCount),
+                                    itemStyle: {
+                                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                                offset: 0,
+                                                color: '#83bff6'
+                                            },
+                                            {
+                                                offset: 0.5,
+                                                color: '#188df0'
+                                            },
+                                            {
+                                                offset: 1,
+                                                color: '#188df0'
+                                            }
+                                        ])
+                                    }
+                                },
+                                {
+                                    name: '平均薪资',
+                                    type: 'line',
+                                    yAxisIndex: 1,
+                                    data: data.map(item => item.averageSalary),
+                                    itemStyle: {
+                                        color: '#91cc75'
+                                    },
+                                    smooth: true
+                                }
+                            ]
+                    };
+
+                case 'pie':
+                    return {
+                        ...baseOption,
+                        tooltip: {
+                                trigger: 'item',
+                                formatter: '{a} <br/>{b}: {c} ({d}%)'
+                            },
+                            legend: {
+                                orient: 'vertical',
+                                left: 'left',
+                                top: 50
+                            },
+                            series: [{
+                                name: title,
+                                type: 'pie',
+                                radius: '60%',
+                                center: ['60%', '50%'],
+                                data: data.map(item => ({
+                                    value: item.jobCount,
+                                    name: item.salaryRange || item.jobType
+                                })),
+                                emphasis: {
+                                    itemStyle: {
+                                        shadowBlur: 10,
+                                        shadowOffsetX: 0,
+                                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                    }
+                                }
+                            }]
+                    };
+
+                case 'horizontal-bar':
+                    return {
+                        ...baseOption,
+                        xAxis: {
+                                type: 'value'
+                            },
+                            yAxis: {
+                                type: 'category',
+                                data: data.map(item => item.skill || item.benefit)
+                            },
+                            series: [{
+                                name: '需求次数',
+                                type: 'bar',
+                                data: data.map(item => item.demandCount || item.provideCount),
+                                itemStyle: {
+                                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{
+                                            offset: 0,
+                                            color: '#ffecd2'
+                                        },
+                                        {
+                                            offset: 0.5,
+                                            color: '#fcb69f'
+                                        },
+                                        {
+                                            offset: 1,
+                                            color: '#ff8a80'
+                                        }
+                                    ])
+                                }
+                            }]
+                    };
+
+                case 'bar':
+                    return {
+                        ...baseOption,
+                        xAxis: {
+                                type: 'category',
+                                data: data.map(item => item.education)
+                            },
+                            yAxis: {
+                                type: 'value',
+                                name: '平均薪资(元)'
+                            },
+                            series: [{
+                                name: '平均薪资',
+                                type: 'bar',
+                                data: data.map(item => item.averageSalary),
+                                itemStyle: {
+                                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                            offset: 0,
+                                            color: '#a8edea'
+                                        },
+                                        {
+                                            offset: 1,
+                                            color: '#fed6e3'
+                                        }
+                                    ])
+                                }
+                            }]
+                    };
+
+                case 'line':
+                    return {
+                        ...baseOption,
+                        xAxis: {
+                                type: 'category',
+                                data: data.map(item => item.workExperience)
+                            },
+                            yAxis: {
+                                type: 'value',
+                                name: '平均薪资(元)'
+                            },
+                            series: [{
+                                name: '平均薪资',
+                                type: 'line',
+                                data: data.map(item => item.averageSalary),
+                                smooth: true,
+                                itemStyle: {
+                                    color: '#73c0de'
+                                },
+                                areaStyle: {
+                                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                            offset: 0,
+                                            color: 'rgba(115, 192, 222, 0.8)'
+                                        },
+                                        {
+                                            offset: 1,
+                                            color: 'rgba(115, 192, 222, 0.1)'
+                                        }
+                                    ])
+                                }
+                            }]
+                    };
+
+                case 'doughnut':
+                    return {
+                        ...baseOption,
+                        tooltip: {
+                                trigger: 'item',
+                                formatter: '{a} <br/>{b}: {c} ({d}%)'
+                            },
+                            legend: {
+                                orient: 'vertical',
+                                left: 'left',
+                                top: 50
+                            },
+                            series: [{
+                                name: '公司规模分布',
+                                type: 'pie',
+                                radius: ['40%', '70%'],
+                                center: ['60%', '50%'],
+                                avoidLabelOverlap: false,
+                                data: data.map(item => ({
+                                    value: item.jobCount,
+                                    name: item.companySizeCategory
+                                }))
+                            }]
+                    };
+
+                case 'trend-line':
+                    // 处理发布趋势数据，转换为年月格式
+                    const processedData = {};
+                    data.forEach(item => {
+                        const date = new Date(item.publishDate);
+                        const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        processedData[yearMonth] = (processedData[yearMonth] || 0) + item.jobCount;
+                    });
+
+                    const sortedData = Object.entries(processedData)
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .map(([date, count]) => ({
+                            date,
+                            count
+                        }));
+
+                    return {
+                        ...baseOption,
+                        xAxis: {
+                                type: 'category',
+                                data: sortedData.map(item => item.date),
+                                axisLabel: {
+                                    rotate: 45
+                                }
+                            },
+                            yAxis: {
+                                type: 'value',
+                                name: '岗位发布数量'
+                            },
+                            series: [{
+                                name: '岗位发布趋势',
+                                type: 'line',
+                                data: sortedData.map(item => item.count),
+                                smooth: true,
+                                itemStyle: {
+                                    color: '#ff6b6b'
+                                },
+                                areaStyle: {
+                                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                            offset: 0,
+                                            color: 'rgba(255, 107, 107, 0.8)'
+                                        },
+                                        {
+                                            offset: 1,
+                                            color: 'rgba(255, 107, 107, 0.1)'
+                                        }
+                                    ])
+                                }
+                            }]
+                    };
+
+                default:
+                    return baseOption;
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('ready', '系统已就绪');
+            loadChart('industry'); // 默认加载行业分析
+        });
+
+        // 全局错误处理
+        window.addEventListener('error', function(e) {
+            console.error('Global error:', e.error);
+            updateStatus('error', '系统错误');
+        });
+
+        // 处理未捕获的Promise错误
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled promise rejection:', e.reason);
+            updateStatus('error', 'Promise错误');
+        });
+    </script>
+</body>
+
+</html>
