@@ -1,4 +1,4 @@
-# RecruitBack - 招聘数据分析系统
+# RecruitAnalysisBack - 招聘数据分析
 
 一个基于 Spring Boot + ECharts 的招聘数据可视化分析平台，提供全面的招聘市场数据洞察。
 
@@ -6,7 +6,7 @@
 
 本项目是一个完整的招聘数据分析系统，包含后端 API 服务和前端数据可视化界面。系统能够分析招聘市场的各种维度数据，包括行业需求、薪资分布、技能要求、地区差异等，为求职者和招聘方提供数据支持。
 
-## 🏗技术架构
+## 技术架构
 
 ### 后端技术栈
 - **框架**: Spring Boot 3.4.7
@@ -80,7 +80,7 @@ RecruitBack/
 
 ### 1. 克隆项目
 ```bash
-git clone 
+git clone https://github.com/Linxin-Zhao/RecruitAnalysisBack.git
 ```
 
 ### 2. 数据库配置
@@ -138,7 +138,7 @@ python -m http.server 3000
 # 访问 http://localhost:3000/index-axios.html
 ```
 
-## 🌐 API 接口文档
+## API 接口文档
 
 ### 基础信息
 - **Base URL**: `http://localhost:8080/api/analysis`
@@ -177,24 +177,16 @@ axios.get('http://localhost:8080/api/analysis/industries')
 ## 📊 数据可视化功能
 
 ### 图表类型
-1. **📈 行业需求分析** - 柱状图展示各行业招聘需求
-2. **💰 薪资分布统计** - 饼图展示薪资区间分布
-3. **🛠️ 技能需求排行** - 横向柱状图展示热门技能
-4. **🗺️ 地区薪资对比** - 地图/柱状图展示地区薪资差异
-5. **🎓 学历薪资关系** - 折线图展示学历与薪资关系
-6. **👔 经验薪资趋势** - 面积图展示经验与薪资趋势
-7. **🏢 公司规模分析** - 雷达图展示不同规模公司薪资
-8. **🎁 热门福利统计** - 词云图展示热门福利
+1. **行业需求分析** - 柱状图展示各行业招聘需求
+2. **薪资分布统计** - 饼图展示薪资区间分布
+3. **技能需求排行** - 横向柱状图展示热门技能
+4. **地区薪资对比** - 地图/柱状图展示地区薪资差异
+5. **学历薪资关系** - 折线图展示学历与薪资关系
+6. **经验薪资趋势** - 面积图展示经验与薪资趋势
+7. **公司规模分析** - 雷达图展示不同规模公司薪资
+8. **热门福利统计** - 词云图展示热门福利
 
-### 交互功能
-- ✅ 响应式设计，支持移动端访问
-- ✅ 图表联动和钻取功能
-- ✅ 数据筛选和搜索
-- ✅ 图表导出功能
-- ✅ 实时数据更新
-- ✅ 加载状态和错误处理
-
-## 🔍 使用说明
+## 使用说明
 
 ### 启动系统
 1. 确保 MySQL 服务运行
@@ -202,14 +194,6 @@ axios.get('http://localhost:8080/api/analysis/industries')
 3. 打开前端页面：`echarts-front/index-axios.html`
 4. 系统将自动加载数据并展示图表
 
-### 数据更新
-```bash
-# 更新数据库数据
-python update_database.py
-
-# 重启后端服务以刷新缓存
-mvn spring-boot:run
-```
 
 ### 自定义配置
 
@@ -229,7 +213,7 @@ server:
   port: 8080  # 修改为你需要的端口
 ```
 
-## 🚀 部署指南
+## 部署指南
 
 ### 开发环境部署
 ```bash
@@ -262,7 +246,7 @@ sudo cp -r echarts-front/* /var/www/html/
 sudo systemctl restart nginx
 ```
 
-### Docker 部署（推荐）
+### Docker 部署
 ```dockerfile
 # Dockerfile
 FROM openjdk:17-jdk-slim
@@ -278,7 +262,7 @@ docker build -t recruit-back .
 docker run -p 8080:8080 recruit-back
 ```
 
-## 🛠️ 开发指南
+## 开发指南
 
 ### 添加新的数据分析接口
 
@@ -344,7 +328,7 @@ function loadNewChart() {
 }
 ```
 
-## 🐛 常见问题
+## 常见问题
 
 ### Q1: 数据库连接失败
 **A**: 检查以下配置：
@@ -373,45 +357,3 @@ function loadNewChart() {
 - 文件编码是否为 UTF-8
 - 数据库表结构是否匹配
 - Python 依赖是否安装
-
-## 📝 更新日志
-
-### v1.0.0 (2025-01-23)
-- ✅ 完成基础的招聘数据分析功能
-- ✅ 实现 12 个核心数据分析接口
-- ✅ 完成 ECharts 数据可视化界面
-- ✅ 集成 Axios 进行前后端交互
-- ✅ 支持响应式设计和移动端访问
-- ✅ 添加完整的错误处理和加载状态
-
-## 🤝 贡献指南
-
-1. Fork 本项目
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 👥 联系方式
-
-- **项目维护者**: [Your Name]
-- **邮箱**: [your.email@example.com]
-- **项目地址**: [GitHub Repository URL]
-
-## 🙏 致谢
-
-感谢以下开源项目的支持：
-- [Spring Boot](https://spring.io/projects/spring-boot)
-- [ECharts](https://echarts.apache.org/)
-- [Axios](https://axios-http.com/)
-- [MyBatis](https://mybatis.org/)
-- [MySQL](https://www.mysql.com/)
-
----
-
-**⭐ 如果这个项目对你有帮助，请给它一个 Star！**
-        
