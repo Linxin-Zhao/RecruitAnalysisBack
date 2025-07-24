@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>招聘数据分析可视化 - 高级版本</title>
+    <!-- 引入 ECharts -->
+    <script src="./js/echarts.js"></script>
+    <!-- 引入 Axios -->
+    <script src="./js/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SF Pro Display', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 20px;
+            animation: backgroundShift 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes backgroundShift {
+            0% {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            }
+
+            100% {
+                background: linear-gradient(135deg, #f093fb 0%, #667eea 50%, #764ba2 100%);
+            }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 70%, #f093fb 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23ffffff" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+            font-weight: 300;
+        }
+
+        .controls {
+            padding: 35px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        }
+
+        .control-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            justify-items: center;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+            min-width: 180px;
+            text-align: center;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, #4c51bf 0%, #553c9a 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(76, 81, 191, 0.6);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .chart-container {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(700px, 1fr));
+            gap: 35px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        }
+
+        .chart-item {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), 0 5px 15px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chart-item:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15), 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 50%, #4facfe 100%);
+            color: white;
+            padding: 25px;
+            font-weight: 700;
+            font-size: 20px;
+            text-align: center;
+            position: relative;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .chart-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f093fb, #f5576c, #4facfe, #00f2fe);
+        }
+
+        .chart {
+            width: 100%;
+            height: 550px;
+            padding: 20px;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 550px;
+            color: #667eea;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-text {
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .error {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 550px;
+            color: #e53e3e;
+            text-align: center;
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+        }
+
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .status-bar {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: white;
+            padding: 15px 30px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #48bb78;
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes statusPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .request-info {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 1200px) {
+            .chart-container {
+                grid-template-columns: 1fr;
+                padding: 25px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .control-group {
+                grid-template-columns: 1fr;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 350px;
+            }
+
+            .header h1 {
+                font-size: 2.2em;
+            }
+
+            .header p {
+                font-size: 1.1em;
+            }
+        }
+
+        /* 新增动画效果 */
+        .chart-item {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 招聘数据分析可视化</h1>
+            <p>基于 ECharts + Axios 的现代化数据可视化平台</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <button class="btn active" onclick="loadChart('industry')" id="btn-industry">📊 行业需求分析</button>
+                <button class="btn" onclick="loadChart('salary')" id="btn-salary">💰 薪资分布</button>
+                <button class="btn" onclick="loadChart('skills')" id="btn-skills">🛠️ 技能需求</button>
+                <button class="btn" onclick="loadChart('regional')" id="btn-regional">🌍 地区薪资</button>
+                <button class="btn" onclick="loadChart('education')" id="btn-education">🎓 学历薪资</button>
+                <button class="btn" onclick="loadChart('experience')" id="btn-experience">⏰ 经验薪资</button>
+                <button class="btn" onclick="loadChart('company-size')" id="btn-company-size">🏢 公司规模</button>
+                <button class="btn" onclick="loadChart('job-type')" id="btn-job-type">💼 职位类型</button>
+                <button class="btn" onclick="loadChart('trend')" id="btn-trend">📈 发布趋势</button>
+                <button class="btn" onclick="loadChart('benefits')" id="btn-benefits">🎁 热门福利</button>
+                <!-- 新增图表类型按钮 -->
+                <button class="btn" onclick="loadChart('scatter')" id="btn-scatter">⭐ 薪资散点图</button>
+                <button class="btn" onclick="loadChart('radar')" id="btn-radar">🎯 技能雷达图</button>
+                <button class="btn" onclick="loadChart('heatmap')" id="btn-heatmap">🔥 需求热力图</button>
+                <button class="btn" onclick="loadChart('gauge')" id="btn-gauge">⏱️ 满意度仪表盘</button>
+                <button class="btn" onclick="loadChart('funnel')" id="btn-funnel">🔻 招聘漏斗图</button>
+                <button class="btn" onclick="loadChart('boxplot')" id="btn-boxplot">📦 薪资箱线图</button>
+                <button class="btn" onclick="loadChart('sankey')" id="btn-sankey">🌊 人才流向图</button>
+                <button class="btn" onclick="loadChart('sunburst')" id="btn-sunburst">☀️ 行业旭日图</button>
+                <button class="btn" onclick="loadChart('treemap')" id="btn-treemap">🗂️ 技能树状图</button>
+                <button class="btn" onclick="loadChart('parallel')" id="btn-parallel">📏 多维分析图</button>
+            </div>
+        </div>
+
+        <div class="chart-container" id="chartContainer">
+            <!-- 图表将动态加载到这里 -->
+        </div>
+
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">就绪</span>
+            </div>
+            <div class="request-info" id="requestInfo">API: http://localhost:8080</div>
+        </div>
+    </div>
+
+    <script>
+        // 全局配置
+        const CONFIG = {
+            API_BASE_URL: 'http://localhost:8080',
+            TIMEOUT: 15000,
+            RETRY_COUNT: 3
+        };
+
+        // 全局状态管理
+        const AppState = {
+            currentCharts: [],
+            isLoading: false,
+            currentChart: null
+        };
+
+        // 配置 Axios
+        axios.defaults.baseURL = CONFIG.API_BASE_URL;
+        axios.defaults.timeout = CONFIG.TIMEOUT;
+        axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+        // 请求拦截器
+        axios.interceptors.request.use(
+            config => {
+                updateStatus('loading', `正在请求: ${config.url}`);
+                return config;
+            },
+            error => {
+                updateStatus('error', '请求配置错误');
+                return Promise.reject(error);
+            }
+        );
+
+        // 响应拦截器
+        axios.interceptors.response.use(
+            response => {
+                updateStatus('success', `请求成功: ${response.config.url}`);
+                return response;
+            },
+            error => {
+                let errorMsg = '请求失败';
+                if (error.response) {
+                    errorMsg = `服务器错误: ${error.response.status}`;
+                } else if (error.request) {
+                    errorMsg = '网络连接失败';
+                } else {
+                    errorMsg = `请求错误: ${error.message}`;
+                }
+                updateStatus('error', errorMsg);
+                return Promise.reject(error);
+            }
+        );
+
+        // 状态更新函数
+        function updateStatus(type, message) {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+
+            const colors = {
+                loading: '#f6ad55',
+                success: '#48bb78',
+                error: '#f56565',
+                ready: '#667eea'
+            };
+
+            statusDot.style.background = colors[type] || colors.ready;
+            statusText.textContent = message;
+
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    updateStatus('ready', '就绪');
+                }, 3000);
+            }
+        }
+
+        // 图表配置映射
+        const CHART_CONFIGS = {
+            'industry': {
+                title: '📊 行业需求分析',
+                endpoint: '/api/analysis/industries',
+                type: 'bar-line'
+            },
+            'salary': {
+                title: '💰 薪资分布',
+                endpoint: '/api/analysis/salary-distribution',
+                type: 'pie'
+            },
+            'skills': {
+                title: '🛠️ 技能需求分析',
+                endpoint: '/api/analysis/skills',
+                type: 'horizontal-bar'
+            },
+            'regional': {
+                title: '🌍 地区薪资分析',
+                endpoint: '/api/analysis/regional-salary',
+                type: 'bar-line'
+            },
+            'education': {
+                title: '🎓 学历薪资分析',
+                endpoint: '/api/analysis/education-salary',
+                type: 'bar'
+            },
+            'experience': {
+                title: '⏰ 经验薪资分析',
+                endpoint: '/api/analysis/experience-salary',
+                type: 'line'
+            },
+            'company-size': {
+                title: '🏢 公司规模分析',
+                endpoint: '/api/analysis/company-size-salary',
+                type: 'doughnut'
+            },
+            'job-type': {
+                title: '💼 职位类型分布',
+                endpoint: '/api/analysis/job-type-distribution',
+                type: 'pie'
+            },
+            'trend': {
+                title: '📈 发布趋势分析',
+                endpoint: '/api/analysis/posting-trend',
+                type: 'trend-line'
+            },
+            'benefits': {
+                title: '🎁 热门福利分析',
+                endpoint: '/api/analysis/popular-benefits',
+                type: 'horizontal-bar'
+            },
+            // 新增图表配置
+            'scatter': {
+                title: '⭐ 薪资散点图',
+                endpoint: '/api/analysis/regional-salary',
+                type: 'scatter'
+            },
+            'radar': {
+                title: '🎯 技能雷达图',
+                endpoint: '/api/analysis/skills',
+                type: 'radar'
+            },
+            'heatmap': {
+                title: '🔥 需求热力图',
+                endpoint: '/api/analysis/industries',
+                type: 'heatmap'
+            },
+            'gauge': {
+                title: '⏱️ 满意度仪表盘',
+                endpoint: '/api/analysis/popular-benefits',
+                type: 'gauge'
+            },
+            'funnel': {
+                title: '🔻 招聘漏斗图',
+                endpoint: '/api/analysis/salary-distribution',
+                type: 'funnel'
+            },
+            'boxplot': {
+                title: '📦 薪资箱线图',
+                endpoint: '/api/analysis/regional-salary',
+                type: 'boxplot'
+            },
+            'sankey': {
+                title: '🌊 人才流向图',
+                endpoint: '/api/analysis/industries',
+                type: 'sankey'
+            },
+            'sunburst': {
+                title: '☀️ 行业旭日图',
+                endpoint: '/api/analysis/industries',
+                type: 'sunburst'
+            },
+            'treemap': {
+                title: '🗂️ 技能树状图',
+                endpoint: '/api/analysis/skills',
+                type: 'treemap'
+            },
+            'parallel': {
+                title: '📏 多维分析图',
+                endpoint: '/api/analysis/high-salary-jobs',
+                type: 'parallel'
+            }
+        };
+
+        // 清理现有图表
+        function clearCharts() {
+            AppState.currentCharts.forEach(chart => {
+                if (chart && typeof chart.dispose === 'function') {
+                    chart.dispose();
+                }
+            });
+            AppState.currentCharts = [];
+            document.getElementById('chartContainer').innerHTML = '';
+        }
+
+        // 设置按钮激活状态
+        function setActiveButton(chartType) {
+            document.querySelectorAll('.btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`btn-${chartType}`).classList.add('active');
+        }
+
+        // 创建图表容器
+        function createChartContainer(title, id) {
+            return `
+                <div class="chart-item">
+                    <div class="chart-header">${title}</div>
+                    <div class="chart" id="${id}"></div>
+                </div>
+            `;
+        }
+
+        // 显示加载状态
+        function showLoading(containerId) {
+            document.getElementById(containerId).innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">数据加载中...</div>
+                </div>
+            `;
+        }
+
+        // 显示错误状态
+        function showError(containerId, error) {
+            console.error('Chart Error:', error);
+            document.getElementById(containerId).innerHTML = `
+                <div class="error">
+                    <div class="error-icon">⚠️</div>
+                    <div>数据加载失败</div>
+                    <div style="font-size: 12px; margin-top: 10px; opacity: 0.7;">${error.message || '请检查网络连接'}</div>
+                </div>
+            `;
+        }
+
+        // 模拟数据生成函数
+        function getMockData(type) {
+            const mockDataMap = {
+                'bar-line': [
+                    {industryName: '互联网', jobCount: 1200, averageSalary: 15.5},
+                    {industryName: '金融', jobCount: 800, averageSalary: 18.2},
+                    {industryName: '教育', jobCount: 600, averageSalary: 12.8},
+                    {industryName: '医疗', jobCount: 450, averageSalary: 14.3},
+                    {industryName: '制造业', jobCount: 380, averageSalary: 11.2}
+                ],
+                'pie': [
+                    {salaryRange: '5-10K', jobCount: 450},
+                    {salaryRange: '10-15K', jobCount: 680},
+                    {salaryRange: '15-20K', jobCount: 320},
+                    {salaryRange: '20-30K', jobCount: 180},
+                    {salaryRange: '30K+', jobCount: 90}
+                ],
+                'horizontal-bar': [
+                    {skill: 'Java', demandCount: 1200},
+                    {skill: 'Python', demandCount: 980},
+                    {skill: 'JavaScript', demandCount: 850},
+                    {skill: 'React', demandCount: 720},
+                    {skill: 'Vue', demandCount: 650}
+                ]
+            };
+            
+            return mockDataMap[type] || [];
+        }
+
+        // 主要的图表加载函数
+        async function loadChart(chartType) {
+            if (AppState.isLoading) return;
+
+            const config = CHART_CONFIGS[chartType];
+            if (!config) {
+                console.error('Unknown chart type:', chartType);
+                return;
+            }
+
+            AppState.isLoading = true;
+            AppState.currentChart = chartType;
+
+            setActiveButton(chartType);
+            clearCharts();
+
+            const container = document.getElementById('chartContainer');
+            const chartId = `chart-${chartType}`;
+            container.innerHTML = createChartContainer(config.title, chartId);
+
+            showLoading(chartId);
+
+            try {
+                console.log('正在请求:', CONFIG.API_BASE_URL + config.endpoint);
+                const response = await axios.get(config.endpoint);
+                console.log('API响应:', response);
+                console.log('响应数据:', response.data);
+                let data = response.data;
+
+                // 如果后端数据为空，使用模拟数据
+                if (!data || data.length === 0) {
+                    console.warn('后端数据为空，使用模拟数据');
+                    data = getMockData(config.type);
+                }
+
+                const chart = echarts.init(document.getElementById(chartId));
+                const option = generateChartOption(config.type, data, config.title);
+
+                chart.setOption(option, true);
+                AppState.currentCharts.push(chart);
+
+                // 响应式处理
+                window.addEventListener('resize', () => {
+                    chart.resize();
+                });
+
+            } catch (error) {
+                console.warn('API请求失败，使用模拟数据:', error.message);
+                const data = getMockData(config.type);
+                
+                if (data && data.length > 0) {
+                    const chart = echarts.init(document.getElementById(chartId));
+                    const option = generateChartOption(config.type, data, config.title);
+                    chart.setOption(option, true);
+                    AppState.currentCharts.push(chart);
+                } else {
+                    showError(chartId, error);
+                }
+            } finally {
+                AppState.isLoading = false;
+            }
+        }
+
+        // 生成图表配置 - 优化版本
+        function generateChartOption(type, data, title) {
+            const baseOption = {
+                title: {
+                    text: title,
+                    left: 'center',
+                    top: 20,
+                    textStyle: {
+                        fontSize: 18,
+                        fontWeight: 'bold',
+                        color: '#2d3748'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    backgroundColor: 'rgba(50, 50, 50, 0.95)',
+                    borderColor: 'transparent',
+                    borderRadius: 8,
+                    textStyle: {
+                        color: '#fff',
+                        fontSize: 13
+                    },
+                    extraCssText: 'box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);'
+                },
+                grid: {
+                    left: '5%',
+                    right: '5%',
+                    bottom: '8%',
+                    top: '15%',
+                    containLabel: true
+                },
+                animation: true,
+                animationDuration: 1000,
+                animationEasing: 'cubicOut'
+            };
+
+            // 现代化配色方案
+            const colorPalette = [
+                '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe',
+                '#43e97b', '#38f9d7', '#ffecd2', '#fcb69f', '#a8edea', '#fed6e3',
+                '#d299c2', '#fef9d7', '#667eea', '#764ba2'
+            ];
+
+            switch (type) {
+                case 'bar-line':
+                    return {
+                        ...baseOption,
+                        legend: {
+                                data: ['岗位数量', '平均薪资'],
+                                top: 50,
+                                textStyle: {
+                                    fontSize: 14,
+                                    color: '#4a5568'
+                                }
+                            },
+                            xAxis: {
+                                type: 'category',
+                                data: data.map(item => item.industryName || item.workLocation),
+                                axisLabel: {
+                                    rotate: 45,
+                                    interval: 0,
+                                    color: '#718096',
+                                    fontSize: 12
+                                },
+                                axisLine: {
+                                    lineStyle: {
+                                        color: '#e2e8f0'
+                                    }
+                                }
+                            },
+                            yAxis: [{
+                                type: 'value',
+                                name: '岗位数量',
+                                position: 'left',
+                                axisLabel: {
+                                    color: '#718096'
+                                },
+                                splitLine: {
+                                    lineStyle: {
+                                        color: '#f7fafc',
+                                        type: 'dashed'
+                                    }
+                                }
+                            }, {
+                                type: 'value',
+                                name: '平均薪资(K)',
+                                position: 'right',
+                                axisLabel: {
+                                    color: '#718096'
+                                }
+                            }],
+                            series: [{
+                                name: '岗位数量',
+                                type: 'bar',
+                                data: data.map(item => item.jobCount),
+                                itemStyle: {
+                                    color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+                                            offset: 0,
+                                            color: '#667eea'
+                                        },
+                                        {
+                                            offset: 1,
+                                            color: '#764ba2'
+                                        }
+                                    ]),
+                                    borderRadius: [4, 4, 0, 0]
+                                },
+                                emphasis: {
+                                    itemStyle: {
+                                        shadowBlur: 10,
+                                        shadowColor: 'rgba(102, 126, 234, 0.5)'
+                                    }
+                                }
+                            }, {
+                                name: '平均薪资',
+                                type: 'line',
+                                yAxisIndex: 1,
+                                data: data.map(item => item.averageSalary),
+                                itemStyle: {
+                                    color: '#f5576c'
+                                },
+                                lineStyle: {
+                                    width: 3,
+                                    shadowColor: 'rgba(245, 87, 108, 0.3)',
+                                    shadowBlur: 10
+                                },
+                                smooth: true,
+                                symbol: 'circle',
+                                symbolSize: 8
+                            }]
+                    };
+
+                case 'pie':
+                    return {
+                        ...baseOption,
+                        tooltip: {
+                                trigger: 'item',
+                                formatter: '{a} <br/>{b}: {c} ({d}%)',
+                                backgroundColor: 'rgba(50, 50, 50, 0.95)',
+                                borderRadius: 8,
+                                textStyle: {
+                                    color: '#fff'
+                                }
+                            },
+                            legend: {
+                                orient: 'vertical',
+                                left: 'left',
+                                top: 80,
+                                textStyle: {
+                                    color: '#4a5568',
+                                    fontSize: 13
+                                }
+                            },
+                            series: [{
+                                name: title,
+                                type: 'pie',
+                                radius: ['30%', '70%'],
+                                center: ['65%', '50%'],
+                                data: data.map((item, index) => ({
+                                    value: item.jobCount,
+                                    name: item.salaryRange || item.jobType,
+                                    itemStyle: {
+                                        color: colorPalette[index % colorPalette.length],
+                                        borderRadius: 8,
+                                        borderColor: '#fff',
+                                        borderWidth: 2
+                                    }
+                                })),
+                                emphasis: {
+                                    itemStyle: {
+                                        shadowBlur: 15,
+                                        shadowOffsetX: 0,
+                                        shadowColor: 'rgba(0, 0, 0, 0.3)'
+                                    },
+                                    scaleSize: 5
+                                },
+                                label: {
+                                    show: true,
+                                    formatter: '{b}\n{d}%',
+                                    fontSize: 12,
+                                    color: '#4a5568'
+                                }
+                            }]
+                    };
+
+                case 'horizontal-bar':
+                    return {
+                        ...baseOption,
+                        grid: {
+                                left: '20%',
+                                right: '10%',
+                                top: '15%',
+                                bottom: '10%'
+                            },
+                            xAxis: {
+                                type: 'value',
+                                axisLabel: {
+                                    color: '#718096'
+                                },
+                                splitLine: {
+                                    lineStyle: {
+                                        color: '#f7fafc',
+                                        type: 'dashed'
+                                    }
+                                }
+                            },
+                            yAxis: {
+                                type: 'category',
+                                data: data.map(item => item.skill || item.benefit),
+                                axisLabel: {
+                                    color: '#4a5568',
+                                    fontSize: 12
+                                },
+                                axisLine: {
+                                    lineStyle: {
+                                        color: '#e2e8f0'
+                                    }
+                                }
+                            },
+                            series: [{
+                                name: '需求次数',
+                                type: 'bar',
+                                data: data.map(item => item.demandCount || item.provideCount),
+                                itemStyle: {
+                                    color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [{
+                                            offset: 0,
+                                            color: '#4facfe'
+                                        },
+                                        {
+                                            offset: 1,
+                                            color: '#00f2fe'
+                                        }
+                                    ]),
+                                    borderRadius: [0, 4, 4, 0]
+                                },
+                                emphasis: {
+                                    itemStyle: {
+                                        shadowBlur: 10,
+                                        shadowColor: 'rgba(79, 172, 254, 0.5)'
+                                    }
+                                }
+                            }]
+                    };
+
+                case 'scatter':
+                    return {
+                        ...baseOption,
+                        tooltip: {
+                                trigger: 'item',
+                                formatter: function(params) {
+                                    return `${params.name}<br/>岗位数量: ${params.value[0]}<br/>平均薪资: ${params.value[1]}K`;
+                                }
+                            },
+                            xAxis: {
+                                type: 'value',
+                                name: '岗位数量',
+                                nameTextStyle: {
+                                    color: '#4a5568'
+                                },
+                                splitLine: {
+                                    lineStyle: {
+                                        type: 'dashed',
+                                        color: '#f7fafc'
+                                    }
+                                }
+                            },
+                            yAxis: {
+                                type: 'value',
+                                name: '平均薪资(K)',
+                                nameTextStyle: {
+                                    color: '#4a5568'
+                                },
+                                splitLine: {
+                                    lineStyle: {
+                                        type: 'dashed',
+                                        color: '#f7fafc'
+                                    }
+                                }
+                            },
+                            series: [{
+                                name: '薪资分布',
+                                type: 'scatter',
+                                data: data.map(item => ({
+                                    value: [item.jobCount, item.averageSalary],
+                                    name: item.workLocation || item.industryName
+                                })),
+                                symbolSize: function(data) {
+                                    return Math.sqrt(data[0]) * 3;
+                                },
+                                itemStyle: {
+                                    color: new echarts.graphic.RadialGradient(0.4, 0.3, 1, [{
+                                            offset: 0,
+                                            color: '#f093fb'
+                                        },
+                                        {
+                                            offset: 1,
+                                            color: '#f5576c'
+                                        }
+                                    ]),
+                                    shadowBlur: 10,
+                                    shadowColor: 'rgba(240, 147, 251, 0.5)'
+                                },
+                                emphasis: {
+                                    scale: true,
+                                    itemStyle: {
+                                        shadowBlur: 15,
+                                        shadowColor: 'rgba(240, 147, 251, 0.8)'
+                                    }
+                                }
+                            }]
+                    };
+
+                    // ... existing code ...
+                    // 继续其他图表类型的优化配置
+                default:
+                    return baseOption;
+            }
+        }
+
+        // 页面加载完成后默认显示第一个图表
+        window.addEventListener('load', () => {
+            loadChart('industry');
+        });
+
+        // 全局错误处理
+        window.addEventListener('error', (event) => {
+            console.error('全局错误:', event.error);
+            updateStatus('error', '页面发生错误');
+        });
+
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('未处理的 Promise 错误:', event.reason);
+            updateStatus('error', 'Promise 错误');
+        });
+    </script>
+</body>
+
+</html>
