@@ -1,12 +1,12 @@
-# 📊 RecruitBack - 招聘数据分析系统
+# RecruitBack - 招聘数据分析系统
 
 一个基于 Spring Boot + ECharts 的招聘数据可视化分析平台，提供全面的招聘市场数据洞察。
 
-## 🚀 项目概述
+## 项目概述
 
 本项目是一个完整的招聘数据分析系统，包含后端 API 服务和前端数据可视化界面。系统能够分析招聘市场的各种维度数据，包括行业需求、薪资分布、技能要求、地区差异等，为求职者和招聘方提供数据支持。
 
-## 🏗️ 技术架构
+## 🏗技术架构
 
 ### 后端技术栈
 - **框架**: Spring Boot 3.4.7
@@ -22,7 +22,7 @@
 - **样式**: 原生 CSS + 响应式设计
 - **架构**: 单页面应用 (SPA)
 
-## 📁 项目结构
+## 项目结构
 
 ```
 RecruitBack/
@@ -63,7 +63,7 @@ RecruitBack/
 └── pom.xml                                  # Maven配置
 ```
 
-## 🔧 环境要求
+## 环境要求
 
 ### 系统要求
 - **操作系统**: Windows 10/11, macOS, Linux
@@ -76,12 +76,11 @@ RecruitBack/
 - **数据库管理**: MySQL Workbench, Navicat
 - **API测试**: Postman, Apifox
 
-## ⚙️ 安装与配置
+## ⚙安装与配置
 
 ### 1. 克隆项目
 ```bash
-git clone <repository-url>
-cd RecruitBack
+git clone 
 ```
 
 ### 2. 数据库配置
