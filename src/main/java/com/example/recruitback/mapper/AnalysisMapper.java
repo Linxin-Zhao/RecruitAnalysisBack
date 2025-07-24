@@ -6,9 +6,9 @@ import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
-@Mapper
-public interface AnalysisMapper {
-    
+@Mapper // 表示该类是一个 MyBatis 的 Mapper 类
+public interface AnalysisMapper { // 定义接口
+    // 功能描述：获取行业需求
     @Select("SELECT * FROM industry_demand ORDER BY 岗位数量 DESC LIMIT 20")
     List<IndustryDemand> getTopIndustries();
     

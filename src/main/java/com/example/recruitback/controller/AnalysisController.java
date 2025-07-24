@@ -10,18 +10,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/analysis")
-@CrossOrigin(origins = "*")
+@RestController // 表示该类是一个 RESTful API 控制器
+@RequestMapping("/api/analysis") // 表示该控制器处理请求的路径
+@CrossOrigin(origins = "*")  // 允许所有源的请求
 public class AnalysisController {
     
-    @Autowired
-    private AnalysisService analysisService;
+    @Autowired // 表示自动注入，创建该类实例时，会自动将依赖的 Service 注入进来
+    private AnalysisService analysisService; // 表示该控制器调用的 Service
     
-    @GetMapping("/industries")
+    @GetMapping("/industries")  // 表示该方法处理 GET 请求
     public List<IndustryDemand> getTopIndustries() {
         return analysisService.getTopIndustries();
-    }
+    }  // 获取行业需求
     
     @GetMapping("/salary-distribution")
     public List<SalaryDistribution> getSalaryDistribution() {
