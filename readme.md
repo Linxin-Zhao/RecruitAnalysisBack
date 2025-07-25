@@ -76,7 +76,7 @@ RecruitBack/
 - **数据库管理**: MySQL Workbench, Navicat
 - **API测试**: Postman, Apifox
 
-## ⚙安装与配置
+## 安装与配置
 
 ### 1. 克隆项目
 ```bash
@@ -174,7 +174,7 @@ axios.get('http://localhost:8080/api/analysis/industries')
   });
 ```
 
-## 📊 数据可视化功能
+## 数据可视化功能
 
 ### 图表类型
 1. **行业需求分析** - 柱状图展示各行业招聘需求
@@ -306,7 +306,7 @@ public List<NewAnalysis> getNewAnalysis() {
 1. **在前端添加按钮**
 ```html
 <button class="btn" onclick="loadChart('newChart')" id="btn-new">
-    🆕 新分析
+    新分析
 </button>
 ```
 
