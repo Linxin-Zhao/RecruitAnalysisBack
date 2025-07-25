@@ -9,11 +9,13 @@
 原始数据集：https://pan.baidu.com/s/1MpsrGhF6bHrOqFawUNwpdw 
 提取码: 823y
 
-原始数据集经过 Spark 集群处理，将处理后的数据导入到 MySQL，后端项目 RecruitAnalysisBack 与数据库交互
+原始数据集经过 Spark 集群处理，将处理后的数据导入到 MySQL，后端使用 Spring Boot，前端使用 Vue 
 
 Scala 代码仓库：https://gitee.com/sdwangfei/summer-training-group
 
-Vue 前端代码：https://gitee.com/Lynnii/recruit-back-front/tree/master/
+后端代码：https://github.com/Linxin-Zhao/RecruitAnalysisBack
+
+前端代码：https://gitee.com/Lynnii/recruit-back-front/tree/master/
 
 
 
