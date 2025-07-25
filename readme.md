@@ -10,6 +10,7 @@
 提取码: 823y
 
 原始数据集经过 Spark 集群处理，将处理后的数据导入到 MySQL，后端项目 RecruitAnalysisBack 与数据库交互
+
 Scala 代码仓库：https://gitee.com/sdwangfei/summer-training-group
 
 Vue 前端代码：https://gitee.com/Lynnii/recruit-back-front/tree/master/
