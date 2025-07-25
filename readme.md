@@ -6,14 +6,23 @@
 
 本项目是一个完整的招聘数据分析系统，包含后端 API 服务和前端数据可视化界面。系统能够分析招聘市场的各种维度数据，包括行业需求、薪资分布、技能要求、地区差异等，为求职者和招聘方提供数据支持。
 
-数据集：https://pan.baidu.com/s/1MpsrGhF6bHrOqFawUNwpdw 
-提取码:823y
+原始数据集：https://pan.baidu.com/s/1MpsrGhF6bHrOqFawUNwpdw 
+提取码: 823y
+
+原始数据集经过 Spark 集群处理，将处理后的数据导入到 MySQL，后端项目 RecruitAnalysisBack 与数据库交互
+Scala 代码仓库：https://gitee.com/sdwangfei/summer-training-group
+
+Vue 前端代码：https://gitee.com/Lynnii/recruit-back-front/tree/master/
+
+
+
+------------------------------
 
 ## 技术架构
 
 ### 后端技术栈
 - **框架**: Spring Boot 3.4.7
-- **数据库**: MySQL 8.0+
+- **数据库**: MySQL 5
 - **ORM**: MyBatis 3.0.4
 - **Java版本**: JDK 17
 - **构建工具**: Maven
