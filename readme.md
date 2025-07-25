@@ -6,7 +6,8 @@
 
 本项目是一个完整的招聘数据分析系统，包含后端 API 服务和前端数据可视化界面。系统能够分析招聘市场的各种维度数据，包括行业需求、薪资分布、技能要求、地区差异等，为求职者和招聘方提供数据支持。
 
-数据集：https://pan.baidu.com/s/1MpsrGhF6bHrOqFawUNwpdw ，提取码:823y
+数据集：https://pan.baidu.com/s/1MpsrGhF6bHrOqFawUNwpdw 
+提取码:823y
 
 ## 技术架构
 
